@@ -1,6 +1,7 @@
+import { useAuth } from 'hooks/useAuth';
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
-import { logout, useAuth, userIsLoggedIn } from 'shared/services/authService';
+import { logout, userIsLoggedIn } from 'services/authService';
 import Button from './basics/Button';
 
 const Navbar = () => {

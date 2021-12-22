@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import Button from 'shared/components/basics/Button';
-import PageHeader from 'shared/components/PageHeader';
-import { useAuth, userIsLoggedIn } from 'shared/services/authService';
+import Button from 'components/basics/Button';
+import PageHeader from 'components/PageHeader';
+import { userIsLoggedIn } from 'services/authService';
+import { useAuth } from 'hooks/useAuth';
 
 const Index = () => {
     const { user } = useAuth();

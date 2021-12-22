@@ -1,9 +1,10 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../constants'
-import { refreshTokenLogin, tokenIsPresentButExpired } from './authService';
-import LocalStorageService from './localStorageService';
+import axios from 'axios'
+import { API_BASE_URL } from 'utils/constants'
+import { login, LoginMode, canRefreshToken } from 'services/authService';
+import LocalStorageService from 'services/localStorageService';
+import { UserReducerActionType } from 'App';
 
-export const setupAxiosInterceptors = () => {
+export const setupAxiosInterceptors = (dispatch: React.Dispatch<UserReducerActionType>) => {
     axios.defaults.baseURL = API_BASE_URL;
     axios.defaults.withCredentials = true;
 
@@ -35,12 +36,16 @@ export const setupAxiosInterceptors = () => {
                 return Promise.reject(error);
             }
 
-            if (error.response?.status === 401 && tokenIsPresentButExpired(LocalStorageService.getUserData())) {
+            if (error.response?.status === 401 && canRefreshToken(LocalStorageService.getUserData())) {
                 console.log('token expired, trying to refresh');
                 originalRequest._retry = true;
 
                 // Refresh token and remake the request
-                await refreshTokenLogin();
+                await login({
+                    loginMode: LoginMode.SILENT,
+                    dispatch: dispatch,
+                    cancelToken: axios.CancelToken.source(),
+                });
 
                 // Set user data in the context
                 // const { userName, expireDate } = LocalService.getUserData();

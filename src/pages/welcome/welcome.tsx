@@ -1,8 +1,10 @@
+import { useAuth } from "hooks/useAuth";
 
 const Welcome = () => {
+    const { user } = useAuth();
     return (
         <div>
-            Welcome
+            Welcome {user.userName}
         </div>
     )
 }

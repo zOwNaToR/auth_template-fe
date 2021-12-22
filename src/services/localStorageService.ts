@@ -1,5 +1,5 @@
-import { reviveDateTime } from 'shared/helpers';
-import { USER_STORAGE_KEY } from '../constants';
+import { reviveDateTime } from 'utils/dates';
+import { USER_STORAGE_KEY } from 'utils/constants';
 
 type UserData = {
     token?: string,

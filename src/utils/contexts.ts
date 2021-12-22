@@ -1,6 +1,6 @@
 import { UserReducerActionType } from "App";
 import { createContext } from "react";
-import { User } from 'shared/types';
+import { User } from 'utils/types';
 
 type AuthContextType = {
 	user: User,
