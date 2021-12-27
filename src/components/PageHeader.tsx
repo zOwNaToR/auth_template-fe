@@ -11,7 +11,7 @@ const PageTitle: FC = ({ children }) => {
 
 const PageHeader: FC = ({ children }) => {
     return (
-        <CenteredContainer className='mb-3'>
+        <CenteredContainer className='mb-4'>
             <PageTitle>
                 {children}
             </PageTitle>

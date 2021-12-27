@@ -25,7 +25,7 @@ const Navbar = () => {
                             className="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-nowrap uppercase cursor-pointer"
                             onClick={() => navigate('/')}
                         >
-                            .NET-React Auth
+                            Auth
                         </a>
                         <button
                             className="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded-md bg-transparent block lg:hidden outline-none focus:outline-none"

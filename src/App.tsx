@@ -122,7 +122,7 @@ const App = () => {
 				<WithAxios>
 					<Navbar />
 
-					<div className="Content mx-5">
+					<div className="Content mx-5 mt-5">
 						<QueryClientProvider client={queryClient}>
 							<Routes>
 								<Route index element={<Index />} />
@@ -134,7 +134,14 @@ const App = () => {
 										</AnonymousRoute>
 									}
 								/>
-								<Route path="/login" element={<Login />} />
+								<Route
+									path="/login"
+									element={
+										<AnonymousRoute>
+											<Login />
+										</AnonymousRoute>
+									}
+								/>
 								<Route
 									path="/welcome"
 									element={

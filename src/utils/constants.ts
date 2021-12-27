@@ -10,6 +10,14 @@ export enum AUTHENTICATION_RESULT_STATUS {
     REQUEST_CANCELED = 'canceled',
 };
 
+export enum SIGNUP_RESULT_STATUS {
+    PENDING = 'pending',
+    REDIRECT = 'redirect',
+    SIGNEDUP = 'signedup',
+    FAIL = 'fail',
+    REQUEST_CANCELED = 'canceled',
+};
+
 export enum LOGIN_MODE {
     CREDENTIALS,
     SILENT,

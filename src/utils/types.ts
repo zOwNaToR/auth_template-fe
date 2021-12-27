@@ -4,10 +4,13 @@ type BaseAuthInfo = {
     expireDate?: Date;
     refreshTokenHidden: boolean;
 }
-export type AuthResponseBody = BaseAuthInfo & {
-    userName: string;
-    success: boolean;
+export type BaseAuthResponseType = {
+    success: boolean,
     errors: string[];
+}
+
+export type AuthResponseBody = BaseAuthResponseType & BaseAuthInfo & {
+    userName: string;
     roles: string[];
 }
 
@@ -16,6 +19,7 @@ export type AuthResponse = {
     isRequestCanceled: boolean;
 }
 
+// User
 export type User = BaseAuthInfo & {
     userName?: string,
     isLoading: boolean,

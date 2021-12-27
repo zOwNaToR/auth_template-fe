@@ -1,10 +1,10 @@
 import { UserReducerActionType } from 'App';
 import axios, { AxiosResponse, CancelTokenSource } from 'axios';
-import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
+import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, SIGNUP_RESULT_STATUS } from 'utils/constants';
 import { getErrorMessage } from 'utils/errors';
-import { AuthResponseBody, User } from 'utils/types';
+import { AuthResponseBody, BaseAuthResponseType, User } from 'utils/types';
 import LocalStorageService from '../localStorageService';
-import { LoginParams, LoginResponseType, LogoutResponseType } from './types';
+import { LoginParams, LoginResponseType, LogoutResponseType, SignupParams, SignupResponseType } from './types';
 
 // Login functions
 export const login = async (params: LoginParams): Promise<LoginResponseType> => {
@@ -25,7 +25,7 @@ export const login = async (params: LoginParams): Promise<LoginResponseType> => 
         }
 
         // Check if userData are not empty, then set them in the storage
-        if (loginResp?.data) {
+        if (loginResp.data.success) {
             params.dispatch && params.dispatch({
                 type: AUTHENTICATION_RESULT_STATUS.LOGGED,
                 payload: { ...loginResp.data, isLoading: false, },
@@ -37,7 +37,7 @@ export const login = async (params: LoginParams): Promise<LoginResponseType> => 
             type: AUTHENTICATION_RESULT_STATUS.FAIL,
             error: 'Response from server is empty',
         });
-        return { status: AUTHENTICATION_RESULT_STATUS.FAIL, message: 'Response from server is empty' };
+        return { status: AUTHENTICATION_RESULT_STATUS.FAIL, message: loginResp.data.errors.join(', ') };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
 
@@ -106,6 +106,31 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
         return { status: AUTHENTICATION_RESULT_STATUS.FAIL, message: errorMessage };
     }
 };
+
+// Signup functions
+export const signup = async (params: SignupParams): Promise<SignupResponseType> => {
+    try {
+        if (!params.username) throw Error('Username required');
+        if (!params.email) throw Error('Email required');
+        if (!params.password) throw Error('Password required');
+
+        const resp = await axios.post<BaseAuthResponseType>('/auth/signup', params, { cancelToken: params.cancelToken.token });
+
+        if (resp.data?.success) {
+            return { status: SIGNUP_RESULT_STATUS.SIGNEDUP };
+        }
+
+        return { status: SIGNUP_RESULT_STATUS.FAIL, message: resp.data.errors.join(', ') };
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+
+        if (axios.isCancel(error)) {
+            return { status: SIGNUP_RESULT_STATUS.REQUEST_CANCELED };
+        }
+
+        return { status: SIGNUP_RESULT_STATUS.FAIL, message: errorMessage };
+    }
+}
 
 // Utility
 export const userIsLoggedIn = (user: User) => {

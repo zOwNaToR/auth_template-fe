@@ -1,4 +1,5 @@
 import Button from 'components/basics/Button';
+import CenteredContainer from 'components/CenteredContainer';
 import PageHeader from 'components/PageHeader';
 import { useAuth } from 'hooks/useAuth';
 import { VFC } from 'react';
@@ -15,19 +16,15 @@ const Index: VFC = () => {
     }
 
     return (
-        <div className="d-flex">
+        <>
             <PageHeader>
                 Index
             </PageHeader>
 
-            {userIsLoggedIn(user) ? (
-                <>Welcome {user.userName}</>
-            ) : (
-                <Button onClick={() => navigate('/login')}>Go to Login</Button>
-            )}
-
-            <Button onClick={handleTestClick} className='ml-2'>Test auth route</Button>
-        </div>
+            <CenteredContainer>
+                <Button onClick={handleTestClick} className='ml-2'>Test auth route</Button>
+            </CenteredContainer>
+        </>
     )
 }
 

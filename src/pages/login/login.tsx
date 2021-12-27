@@ -38,23 +38,15 @@ const Login: VFC = () => {
         }
     }
 
-    // If user is logged in, redirect to /welcome
-    useEffect(() => {
-        if (userIsLoggedIn(user)) {
-            navigate('/welcome');
-        }
-    }, [user.token]);
-
     if (user.isLoading) {
         return <Spinner />;
     }
     return (
         <>
-            <PageHeader>
-                Login
-            </PageHeader>
-
             <FullScreenForm>
+                <PageHeader>
+                    Login
+                </PageHeader>
                 <form className='flex flex-col items-start' onSubmit={handleSubmit}>
                     <Input
                         className='mb-4 block self-stretch'
@@ -71,7 +63,7 @@ const Login: VFC = () => {
                         onChange={e => setPassword(e.currentTarget.value)}
                     />
                     {error && <div className='mb-4 text-red-500'>{error}</div>}
-                    <Button color="tertiary" type="submit" className='self-center'>Login</Button>
+                    <Button type="submit" className='self-center'>Login</Button>
                 </form>
             </FullScreenForm>
         </>
