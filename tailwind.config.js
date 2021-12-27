@@ -4,11 +4,18 @@ module.exports = {
   ],
   safelist: [
     {
-      pattern: /bg-(.*)-500/,
-    }
+      pattern: /bg-(.*)/,
+      pattern: /text-(.*)/,
+    },
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: '#2E00FC',
+        secondary: '#EAEAEA',
+        tertiary: '#FB3640',
+      },
+    },
   },
   plugins: [],
 }

@@ -1,26 +1,21 @@
-import styled from 'styled-components'
+import { useFormatClassName } from 'hooks/useFormatClassName';
+import { ComponentProps, useMemo, VFC } from 'react';
 
-interface InputProps {
-    fullWidth?: boolean;
-    isError?: boolean;
+type InputProps = ComponentProps<'input'> & {
+    hasError?: boolean;
 }
 
-export const Input = styled.input<InputProps>`
-    border: 1px #ddd solid;
-    border-radius: 4px;
-    padding: 5px 10px;
-    height: 40px;
+const Input: VFC<InputProps> = (props) => {
+    let [className, otherProps] = useFormatClassName(props, `
+        ${props.readOnly ? "bg-transparent" : ''}
+        ${props.hasError ? "bg-red-600" : ''}
+        ${props.hasError ? "bg-red-600" : ''}
+    `, [props.hasError, props.readOnly]);
 
-    &:focus,
-    &:active {
-        outline: none;
-    }
-
-    ${(props) => (props.fullWidth ? "width: 100%;" : "")}
-    ${(props) => (props.readOnly ? "background-color: transparent;" : "")}
-
-    ${(props) => props.isError && "border-color: #DE1C22;"}
-    ${(props) => props.isError && "color: #DE1C22;"}
-`;
+    return <input
+        className={`${className} rounded-md h-10 py-1 px-2.5 border border-gray-200 focus:outline-none active:outline-none`}
+        {...otherProps}
+    />
+}
 
 export default Input

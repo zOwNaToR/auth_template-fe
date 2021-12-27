@@ -1,4 +1,5 @@
-import React, { FC } from 'react'
+import { FC } from 'react';
+import CenteredContainer from './CenteredContainer';
 
 const PageTitle: FC = ({ children }) => {
     return (
@@ -10,11 +11,11 @@ const PageTitle: FC = ({ children }) => {
 
 const PageHeader: FC = ({ children }) => {
     return (
-        <div className='d-flex justify-center mb-3'>
+        <CenteredContainer className='mb-3'>
             <PageTitle>
                 {children}
             </PageTitle>
-        </div>
+        </CenteredContainer>
     )
 }
 

@@ -1,12 +1,18 @@
-import { useNavigate } from 'react-router-dom'
 import Button from 'components/basics/Button';
 import PageHeader from 'components/PageHeader';
-import { userIsLoggedIn } from 'services/authService';
 import { useAuth } from 'hooks/useAuth';
+import { VFC } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { userIsLoggedIn, test } from 'services/authService/authService';
 
-const Index = () => {
+const Index: VFC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    const handleTestClick = async () => {
+        const resp = await test();
+        console.log(resp);
+    }
 
     return (
         <div className="d-flex">
@@ -19,6 +25,8 @@ const Index = () => {
             ) : (
                 <Button onClick={() => navigate('/login')}>Go to Login</Button>
             )}
+
+            <Button onClick={handleTestClick} className='ml-2'>Test auth route</Button>
         </div>
     )
 }

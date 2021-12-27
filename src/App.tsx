@@ -1,20 +1,20 @@
-import { useLayoutEffect, useReducer } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from "react-query";
-import Welcome from 'pages/welcome/welcome';
+import axios from 'axios';
+import AnonymousRoute from 'components/AnonymousRoute';
+import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
+import WithAxios from 'components/WithAxios';
+import Index from 'pages/index';
 import Login from 'pages/login/login';
 import SignUp from 'pages/signUp/signUp';
-import Index from 'pages/index';
-import { setupAxiosInterceptors } from 'services/axiosService';
+import Welcome from 'pages/welcome/welcome';
+import { useLayoutEffect, useReducer } from 'react';
+import { QueryClient, QueryClientProvider } from "react-query";
+import { Route, Routes } from 'react-router-dom';
+import { canRefreshToken, login, userIsLoggedIn } from 'services/authService/authService';
 import LocalStorageService from 'services/localStorageService';
-import { login, LoginMode, canRefreshToken, userIsLoggedIn } from 'services/authService';
+import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
 import { AuthContext } from 'utils/contexts';
 import { User } from 'utils/types';
-import { AUTHENTICATION_RESULT_STATUS } from 'utils/constants';
-import Navbar from 'components/Navbar';
-import WithAxios from 'components/WithAxios';
-import axios from 'axios';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +23,7 @@ const initUser: User = {
 	userName: undefined,
 	expireDate: undefined,
 	token: undefined,
+	refreshTokenHidden: false,
 	errorMessage: undefined,
 };
 
@@ -50,7 +51,7 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 				isLoading: false,
 				expireDate: action.payload.expireDate ? new Date(action.payload.expireDate) : undefined,
 				token: action.payload.token,
-				refreshToken: action.payload.refreshToken,
+				refreshTokenHidden: action.payload.refreshTokenHidden,
 				userName: action.payload.userName,
 				errorMessage: undefined,
 			};
@@ -63,7 +64,7 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 				isLoading: false,
 				expireDate: undefined,
 				token: undefined,
-				refreshToken: undefined,
+				refreshTokenHidden: false,
 				userName: undefined,
 				errorMessage: action.error
 			};
@@ -75,7 +76,7 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 				isLoading: false,
 				expireDate: undefined,
 				token: undefined,
-				refreshToken: undefined,
+				refreshTokenHidden: false,
 				userName: undefined,
 				errorMessage: undefined
 			};
@@ -94,19 +95,19 @@ const App = () => {
 		(async () => {
 			const localStorageData = LocalStorageService.getUserData();
 
-			// If the user in the state is not logged 
+			// If the user is not logged 
 			if (!userIsLoggedIn(user)) {
-				// But in the localstorage whe have a valid token, use that 
+				// But in the localstorage he has a valid token, use that 
 				if (userIsLoggedIn(localStorageData)) {
 					dispatch({
 						type: AUTHENTICATION_RESULT_STATUS.LOGGED,
 						payload: { ...localStorageData, isLoading: false } as User,
 					});
 				}
-				// Else, if the token is present but expired and refreshToken is present, refresh it
+				// Otherwise, if the token is expired and refreshToken is present, use it
 				else if (canRefreshToken(localStorageData)) {
 					await login({
-						loginMode: LoginMode.SILENT,
+						loginMode: LOGIN_MODE.SILENT,
 						dispatch,
 						cancelToken: axios.CancelToken.source(),
 					});
@@ -125,10 +126,16 @@ const App = () => {
 						<QueryClientProvider client={queryClient}>
 							<Routes>
 								<Route index element={<Index />} />
-								<Route path="/signup" element={<SignUp />} />
+								<Route
+									path="/signup"
+									element={
+										<AnonymousRoute>
+											<SignUp />
+										</AnonymousRoute>
+									}
+								/>
 								<Route path="/login" element={<Login />} />
 								<Route
-
 									path="/welcome"
 									element={
 										<PrivateRoute>

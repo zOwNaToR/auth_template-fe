@@ -1,10 +1,9 @@
-import axios from "axios";
 import { useAuth } from "hooks/useAuth";
-import { useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { userIsLoggedIn, login, canRefreshToken, LoginMode } from "services/authService";
+import { FC } from "react";
+import { Navigate } from "react-router-dom";
+import { userIsLoggedIn } from "services/authService/authService";
 
-const PrivateRoute: React.FC = ({ children }) => {
+const PrivateRoute: FC = ({ children }) => {
     const { user } = useAuth();
 
     return userIsLoggedIn(user)

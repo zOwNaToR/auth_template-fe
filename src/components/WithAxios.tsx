@@ -9,9 +9,7 @@ const WithAxios: FC = ({ children }) => {
         setupAxiosInterceptors(dispatch);
     }, [dispatch])
 
-    return <>
-        {children};
-    </>
+    return <>{children}</>;
 }
 
 export default WithAxios

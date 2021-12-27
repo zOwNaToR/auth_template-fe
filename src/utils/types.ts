@@ -1,10 +1,12 @@
-export type AuthResponseBody = {
-    success: boolean;
-    token: string;
-    refreshToken: string;
-    expireDate: Date;
-
+// Auth
+type BaseAuthInfo = {
+    token?: string;
+    expireDate?: Date;
+    refreshTokenHidden: boolean;
+}
+export type AuthResponseBody = BaseAuthInfo & {
     userName: string;
+    success: boolean;
     errors: string[];
     roles: string[];
 }
@@ -14,11 +16,18 @@ export type AuthResponse = {
     isRequestCanceled: boolean;
 }
 
-export type User = {
-    isLoading: boolean,
+export type User = BaseAuthInfo & {
     userName?: string,
-    token?: string,
-    refreshToken?: string,
-    expireDate?: Date,
+    isLoading: boolean,
     errorMessage?: string,
+}
+
+export type UserData = BaseAuthInfo & {
+    userName?: string,
+    isLoading: boolean,
+}
+
+// Props
+export type WithClassName = {
+    className?: string;
 }

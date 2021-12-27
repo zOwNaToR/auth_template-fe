@@ -1,20 +1,33 @@
-import React, { ElementType, FC } from 'react'
+import { useFormatClassName } from 'hooks/useFormatClassName';
+import { ComponentProps, FC } from 'react';
 
-type ButtonProps = React.ComponentProps<'button'> & {
-
+type ButtonProps = ComponentProps<'button'> & {
+    color?: string;
+    textColor?: string;
 }
-const Button: FC<ButtonProps> = (props) => {
-    const color = "cyan";
+
+const Button: FC<ButtonProps> = ({ color, textColor, ...props }) => {
+    let [className, otherProps] = useFormatClassName(props, `
+        bg-${color} active:bg-${color}/50 text-${textColor}
+        font-bold uppercase text-sm px-6 py-3 
+        rounded-md shadow hover:shadow-lg outline-none focus:outline-none 
+        ease-linear transition-all duration-150
+    `, [props.className]);
 
     return (
         <button
-            className={`bg-${color}-500 text-white active:bg-${color}-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none ease-linear transition-all duration-150`}
+            className={className}
             type='button'
-            {...props}
+            {...otherProps}
         >
             {props.children}
         </button>
     )
+}
+
+Button.defaultProps = {
+    color: 'primary',
+    textColor: 'secondary',
 }
 
 export default Button

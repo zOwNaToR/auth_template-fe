@@ -1,54 +1,24 @@
-import { useContext } from 'react';
-import axios, { AxiosResponse, CancelTokenSource } from 'axios';
-import { AUTHENTICATION_RESULT_STATUS } from 'utils/constants';
-import LocalStorageService from './localStorageService';
-import { AuthResponse, AuthResponseBody, User } from 'utils/types';
-import { AuthContext } from 'utils/contexts';
 import { UserReducerActionType } from 'App';
+import axios, { AxiosResponse, CancelTokenSource } from 'axios';
+import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
 import { getErrorMessage } from 'utils/errors';
-
-// Types
-type LoginInputType = {
-    email: string;
-    password: string;
-}
-type LoginResponseType = {
-    status: AUTHENTICATION_RESULT_STATUS,
-    message?: string,
-}
-type LogoutResponseType = {
-    status: AUTHENTICATION_RESULT_STATUS,
-    message?: string,
-}
-export enum LoginMode {
-    CREDENTIALS,
-    SILENT,
-}
-export type LoginParams = { cancelToken: CancelTokenSource } & (
-    | { loginMode: LoginMode.CREDENTIALS, email: string, password: string, dispatch: React.Dispatch<UserReducerActionType> }
-    | { loginMode: LoginMode.SILENT, dispatch: React.Dispatch<UserReducerActionType> | null });
-
-// Utility
-export const userIsLoggedIn = (user: User) => {
-    return user && user.token && user.expireDate && user.expireDate.getTime() > new Date().getTime();
-};
-export const canRefreshToken = (user: User) => {
-    return user && user.token && user.refreshToken && user.expireDate && user.expireDate.getTime() < new Date().getTime();
-};
+import { AuthResponseBody, User } from 'utils/types';
+import LocalStorageService from '../localStorageService';
+import { LoginParams, LoginResponseType, LogoutResponseType } from './types';
 
 // Login functions
-export const login = async (params: LoginParams) => {
+export const login = async (params: LoginParams): Promise<LoginResponseType> => {
     let loginResp: AxiosResponse<AuthResponseBody, any> | null = null;
 
     params.dispatch && params.dispatch({ type: AUTHENTICATION_RESULT_STATUS.PENDING });
 
     try {
         switch (params.loginMode) {
-            case LoginMode.CREDENTIALS:
+            case LOGIN_MODE.CREDENTIALS:
                 loginResp = await credentialsLogin(params.email, params.password, params.cancelToken);
                 break;
-            case LoginMode.SILENT:
-                loginResp = await refreshTokenLogin();
+            case LOGIN_MODE.SILENT:
+                loginResp = await refreshTokenLogin(params.cancelToken);
                 break;
             default:
                 throw new Error('Invalid login mode');
@@ -92,32 +62,32 @@ const credentialsLogin = async (email: string, password: string, cancelToken: Ca
     const loginData = { email, password };
     return await axios.post<AuthResponseBody>('/auth/login', loginData, { cancelToken: cancelToken.token });
 };
-const refreshTokenLogin = async () => {
+const refreshTokenLogin = async (cancelToken: CancelTokenSource) => {
     const userData = LocalStorageService.getUserData();
-    if (!userData || !userData.token || !userData.refreshToken) {
+    if (!userData || !userData.refreshTokenHidden) {
         throw new Error('tokens not valid');
     }
 
-    let tokens = { token: userData.token, refreshToken: userData.refreshToken };
+    // let tokens = { token: userData.token, refreshToken: userData.refreshToken };
     let options = {
+        cancelToken: cancelToken.token,
         headers: {
             Accept: 'application/json',
             'Content-type': 'application/json',
         },
     };
 
-    return await axios.post<AuthResponseBody>('/auth/refresh-token', tokens, options);
+    return await axios.post<AuthResponseBody>('/auth/refresh-token', userData.token ?? {}, options);
 };
 
 // Logout functions
 export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): Promise<LogoutResponseType> => {
     try {
         const userData = LocalStorageService.getUserData();
-        if (!userData || !userData.token || !userData.refreshToken) {
+        if (!userData || !userData.token) {
             throw new Error('userData not valid');
         }
 
-        let refreshToken = userData.refreshToken;
         let options = {
             headers: {
                 Accept: 'application/json',
@@ -125,10 +95,9 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
             },
         };
 
-        const response = await axios.post('/auth/revoke-token', refreshToken, options);
+        const response = await axios.post('/auth/revoke-token', {}, options);
 
         dispatch({ type: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT });
-
         return { status: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT };
 
     } catch (err) {
@@ -138,21 +107,27 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
     }
 };
 
+// Utility
+export const userIsLoggedIn = (user: User) => {
+    return user && user.token && user.expireDate && user.expireDate.getTime() > new Date().getTime();
+};
+export const canRefreshToken = (user: User) => {
+    return user && user.refreshTokenHidden
+        && (!user.token || (user.token && user.expireDate && user.expireDate.getTime() < new Date().getTime()));
+};
+
 // Test functions
 export const test = async () => {
-    return await api_test();
-};
-const api_test = async () => {
-    return await axios
-        .get('/auth/test')
-        .then((resp) => {
-            return resp;
-        })
-        .catch((err) => {
-            if (axios.isCancel(err)) {
-                console.log('cancelled');
-            } else {
-                console.log('test ' + err.response);
-            }
-        });
+    try {
+        const resp = await axios.get('/auth/test');
+        return resp;
+    } catch (err) {
+        if (axios.isCancel(err)) {
+            console.log('cancelled');
+        }
+        else {
+            throw err;
+        }
+    }
+
 };

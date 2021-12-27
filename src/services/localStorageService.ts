@@ -1,13 +1,6 @@
 import { reviveDateTime } from 'utils/dates';
 import { USER_STORAGE_KEY } from 'utils/constants';
-
-type UserData = {
-    token?: string,
-    refreshToken?: string,
-    userName?: string,
-    expireDate?: Date,
-    isLoading: boolean,
-}
+import { UserData } from 'utils/types';
 
 // LocalStorage/User functions
 const setUserData = (data: UserData) => {
