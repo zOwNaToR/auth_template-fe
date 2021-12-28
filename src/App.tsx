@@ -3,6 +3,7 @@ import AnonymousRoute from 'components/AnonymousRoute';
 import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
 import WithAxios from 'components/WithAxios';
+import AskResetPassword from 'pages/ask-reset-password/askResetPassword';
 import Index from 'pages/index';
 import Login from 'pages/login/login';
 import SignUp from 'pages/signUp/signUp';
@@ -139,6 +140,14 @@ const App = () => {
 									element={
 										<AnonymousRoute>
 											<Login />
+										</AnonymousRoute>
+									}
+								/>
+								<Route
+									path="ask-reset-password"
+									element={
+										<AnonymousRoute>
+											<AskResetPassword />
 										</AnonymousRoute>
 									}
 								/>

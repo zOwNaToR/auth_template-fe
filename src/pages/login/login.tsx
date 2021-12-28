@@ -38,6 +38,10 @@ const Login: VFC = () => {
         }
     }
 
+    const handleResetPasswordClick = () => {
+        navigate("/ask-reset-password")
+    }
+
     if (user.isLoading) {
         return <Spinner />;
     }
@@ -63,6 +67,7 @@ const Login: VFC = () => {
                         onChange={e => setPassword(e.currentTarget.value)}
                     />
                     {error && <div className='mb-4 text-red-500'>{error}</div>}
+                    <a href="#" onClick={handleResetPasswordClick}>Reset password</a>
                     <Button type="submit" className='self-center'>Login</Button>
                 </form>
             </FullScreenForm>

@@ -7,16 +7,16 @@ import Spinner from "components/Spinner";
 import { useReducer, useState, VFC } from "react";
 import { useNavigate } from "react-router-dom";
 import { signup } from "services/authService/authService";
-import { SIGNUP_RESULT_STATUS } from "utils/constants";
+import { BASE_RESULT_STATUS } from "utils/constants";
 
 export type SignupReducerActionType = null
-    | { type: SIGNUP_RESULT_STATUS.PENDING }
-    | { type: SIGNUP_RESULT_STATUS.FAIL, error: string }
-    | { type: SIGNUP_RESULT_STATUS.REDIRECT }
-    | { type: SIGNUP_RESULT_STATUS.REQUEST_CANCELED }
-    | { type: SIGNUP_RESULT_STATUS.SIGNEDUP };
+    | { type: BASE_RESULT_STATUS.PENDING }
+    | { type: BASE_RESULT_STATUS.FAIL, error: string }
+    | { type: BASE_RESULT_STATUS.REDIRECT }
+    | { type: BASE_RESULT_STATUS.REQUEST_CANCELED }
+    | { type: BASE_RESULT_STATUS.SUCCESS };
 
-const SignupReducer = (state: SIGNUP_RESULT_STATUS | null, action: SignupReducerActionType): SIGNUP_RESULT_STATUS | null => {
+const SignupReducer = (state: BASE_RESULT_STATUS | null, action: SignupReducerActionType): BASE_RESULT_STATUS | null => {
     return action?.type ?? null;
 }
 
@@ -54,10 +54,10 @@ const SignUp: VFC = () => {
             return;
         }
 
-        dispatch({ type: SIGNUP_RESULT_STATUS.PENDING });
+        dispatch({ type: BASE_RESULT_STATUS.PENDING });
 
         const resp = await signup({ username, email, password, cancelToken: axios.CancelToken.source() });
-        if (resp.status === SIGNUP_RESULT_STATUS.FAIL) {
+        if (resp.status === BASE_RESULT_STATUS.FAIL) {
             setError(resp.message ?? '');
             dispatch({ type: resp.status, error: resp.message ?? '' });
         }
@@ -73,7 +73,7 @@ const SignUp: VFC = () => {
                 <PageHeader>
                     Signup
                 </PageHeader>
-                {signupState === SIGNUP_RESULT_STATUS.SIGNEDUP ? (
+                {signupState === BASE_RESULT_STATUS.SUCCESS ? (
                     <>
                         <Button
                             color="success"
@@ -117,7 +117,7 @@ const SignUp: VFC = () => {
                         />
                         {error && <div className='mb-4 text-red-500'>{error}</div>}
 
-                        {signupState === SIGNUP_RESULT_STATUS.PENDING ? (
+                        {signupState === BASE_RESULT_STATUS.PENDING ? (
                             <Spinner />
                         ) : (
                             <Button color="primary" type="submit" className='self-center'>Signup</Button>

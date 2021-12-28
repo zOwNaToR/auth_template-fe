@@ -1,22 +1,27 @@
-// Auth
 type BaseAuthInfo = {
     token?: string;
     expireDate?: Date;
     refreshTokenHidden: boolean;
 }
-export type BaseAuthResponseType = {
+
+// Auth
+export type BaseAuthResponse_API = {
     success: boolean,
     errors: string[];
 }
 
-export type AuthResponseBody = BaseAuthResponseType & BaseAuthInfo & {
-    userName: string;
-    roles: string[];
+export type SendLinkResetPasswordResponse_API = BaseAuthResponse_API & {
+    resetLink: string,
+    resetPasswordToken: string,
 }
 
-export type AuthResponse = {
-    data?: AuthResponseBody;
+export type AuthResponse_API = {
+    data?: AuthResponseBody_API;
     isRequestCanceled: boolean;
+}
+export type AuthResponseBody_API = BaseAuthResponse_API & BaseAuthInfo & {
+    userName: string;
+    roles: string[];
 }
 
 // User

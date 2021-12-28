@@ -1,14 +1,21 @@
 import { UserReducerActionType } from 'App';
 import axios, { AxiosResponse, CancelTokenSource } from 'axios';
-import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, SIGNUP_RESULT_STATUS } from 'utils/constants';
+import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, BASE_RESULT_STATUS } from 'utils/constants';
 import { getErrorMessage } from 'utils/errors';
-import { AuthResponseBody, BaseAuthResponseType, User } from 'utils/types';
+import { AuthResponseBody_API, BaseAuthResponse_API, SendLinkResetPasswordResponse_API, User } from 'utils/types';
 import LocalStorageService from '../localStorageService';
-import { LoginParams, LoginResponseType, LogoutResponseType, SignupParams, SignupResponseType } from './types';
+import { LoginParams, LoginResponseType, LogoutResponseType, SendLinkResetPasswordResponseType, SignupParams, SignupResponseType } from './types';
+
+const postJsonOptions = {
+    headers: {
+        Accept: 'application/json',
+        'Content-type': 'application/json',
+    },
+};
 
 // Login functions
 export const login = async (params: LoginParams): Promise<LoginResponseType> => {
-    let loginResp: AxiosResponse<AuthResponseBody, any> | null = null;
+    let loginResp: AxiosResponse<AuthResponseBody_API, any> | null = null;
 
     params.dispatch && params.dispatch({ type: AUTHENTICATION_RESULT_STATUS.PENDING });
 
@@ -60,7 +67,7 @@ const credentialsLogin = async (email: string, password: string, cancelToken: Ca
     if (!email || !password) throw new Error('Email and password are required');
 
     const loginData = { email, password };
-    return await axios.post<AuthResponseBody>('/auth/login', loginData, { cancelToken: cancelToken.token });
+    return await axios.post<AuthResponseBody_API>('/auth/login', loginData);
 };
 const refreshTokenLogin = async (cancelToken: CancelTokenSource) => {
     const userData = LocalStorageService.getUserData();
@@ -77,7 +84,7 @@ const refreshTokenLogin = async (cancelToken: CancelTokenSource) => {
         },
     };
 
-    return await axios.post<AuthResponseBody>('/auth/refresh-token', userData.token ?? {}, options);
+    return await axios.post<AuthResponseBody_API>('/auth/refresh-token', userData.token ?? {});
 };
 
 // Logout functions
@@ -88,14 +95,7 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
             throw new Error('userData not valid');
         }
 
-        let options = {
-            headers: {
-                Accept: 'application/json',
-                'Content-type': 'application/json',
-            },
-        };
-
-        const response = await axios.post('/auth/revoke-token', {}, options);
+        const response = await axios.post('/auth/revoke-token', {});
 
         dispatch({ type: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT });
         return { status: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT };
@@ -114,21 +114,44 @@ export const signup = async (params: SignupParams): Promise<SignupResponseType> 
         if (!params.email) throw Error('Email required');
         if (!params.password) throw Error('Password required');
 
-        const resp = await axios.post<BaseAuthResponseType>('/auth/signup', params, { cancelToken: params.cancelToken.token });
+        const resp = await axios.post<BaseAuthResponse_API>('/auth/signup', params);
 
         if (resp.data?.success) {
-            return { status: SIGNUP_RESULT_STATUS.SIGNEDUP };
+            return { status: BASE_RESULT_STATUS.SUCCESS };
         }
 
-        return { status: SIGNUP_RESULT_STATUS.FAIL, message: resp.data.errors.join(', ') };
+        return { status: BASE_RESULT_STATUS.FAIL, message: resp.data.errors.join(', ') };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
 
         if (axios.isCancel(error)) {
-            return { status: SIGNUP_RESULT_STATUS.REQUEST_CANCELED };
+            return { status: BASE_RESULT_STATUS.REQUEST_CANCELED };
         }
 
-        return { status: SIGNUP_RESULT_STATUS.FAIL, message: errorMessage };
+        return { status: BASE_RESULT_STATUS.FAIL, message: errorMessage };
+    }
+}
+
+// Reset password functions
+export const sendLinkResetPassword = async (email: string): Promise<SendLinkResetPasswordResponseType> => {
+    try {
+        if (!email) throw Error('Email required');
+
+        const resp = await axios.post<SendLinkResetPasswordResponse_API>('/auth/send-password-reset-link', { email });
+
+        if (!resp.data.success) {
+            return { status: BASE_RESULT_STATUS.FAIL, message: getErrorMessage(resp) };
+        }
+
+        return { status: BASE_RESULT_STATUS.SUCCESS };
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
+
+        if (axios.isCancel(error)) {
+            return { status: BASE_RESULT_STATUS.REQUEST_CANCELED };
+        }
+
+        return { status: BASE_RESULT_STATUS.FAIL, message: errorMessage };
     }
 }
 

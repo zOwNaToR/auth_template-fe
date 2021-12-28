@@ -1,6 +1,6 @@
 import { UserReducerActionType } from "App";
 import { CancelTokenSource } from "axios";
-import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, SIGNUP_RESULT_STATUS } from "utils/constants";
+import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, BASE_RESULT_STATUS } from "utils/constants";
 
 export type LogoutResponseType = LoginResponseType;
 export type LoginResponseType = {
@@ -8,7 +8,12 @@ export type LoginResponseType = {
     message?: string,
 }
 export type SignupResponseType = {
-    status: SIGNUP_RESULT_STATUS,
+    status: BASE_RESULT_STATUS,
+    message?: string,
+};
+
+export type SendLinkResetPasswordResponseType = {
+    status: BASE_RESULT_STATUS,
     message?: string,
 };
 
