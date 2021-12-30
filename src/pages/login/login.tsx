@@ -1,13 +1,12 @@
 import axios from 'axios';
 import Button from 'components/basics/Button';
 import Input from 'components/basics/Input';
-import CenteredContainer from 'components/CenteredContainer';
 import PageHeader from 'components/PageHeader';
 import Spinner from 'components/Spinner';
 import { useAuth } from 'hooks/useAuth';
-import { useEffect, useState, VFC } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login, userIsLoggedIn } from 'services/authService/authService';
+import { useState, VFC } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { login } from 'services/authService/authService';
 import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
 import { FullScreenForm } from '../../components/FullScreenForm';
 
@@ -38,13 +37,6 @@ const Login: VFC = () => {
         }
     }
 
-    const handleResetPasswordClick = () => {
-        navigate("/ask-reset-password")
-    }
-
-    if (user.isLoading) {
-        return <Spinner />;
-    }
     return (
         <>
             <FullScreenForm>
@@ -67,8 +59,16 @@ const Login: VFC = () => {
                         onChange={e => setPassword(e.currentTarget.value)}
                     />
                     {error && <div className='mb-4 text-red-500'>{error}</div>}
-                    <a href="#" onClick={handleResetPasswordClick}>Reset password</a>
-                    <Button type="submit" className='self-center'>Login</Button>
+
+                    <div className='mb-4'>
+                        <Link className='link' to="/ask-reset-password">Forgot password?</Link>
+                    </div>
+
+                    {user.isLoading ? (
+                        <Spinner small fullWidth />
+                    ) : (
+                        <Button color="primary" type="submit" className='self-center'>Login</Button>
+                    )}
                 </form>
             </FullScreenForm>
         </>

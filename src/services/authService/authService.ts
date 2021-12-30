@@ -1,17 +1,10 @@
 import { UserReducerActionType } from 'App';
 import axios, { AxiosResponse, CancelTokenSource } from 'axios';
-import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, BASE_RESULT_STATUS } from 'utils/constants';
+import { AUTHENTICATION_RESULT_STATUS, BASE_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
 import { getErrorMessage } from 'utils/errors';
 import { AuthResponseBody_API, BaseAuthResponse_API, SendLinkResetPasswordResponse_API, User } from 'utils/types';
 import LocalStorageService from '../localStorageService';
-import { LoginParams, LoginResponseType, LogoutResponseType, SendLinkResetPasswordResponseType, SignupParams, SignupResponseType } from './types';
-
-const postJsonOptions = {
-    headers: {
-        Accept: 'application/json',
-        'Content-type': 'application/json',
-    },
-};
+import { LoginParams, LoginResponseType, LogoutResponseType, BaseResponseType, SignupParams } from './types';
 
 // Login functions
 export const login = async (params: LoginParams): Promise<LoginResponseType> => {
@@ -48,14 +41,6 @@ export const login = async (params: LoginParams): Promise<LoginResponseType> => 
     } catch (error) {
         const errorMessage = getErrorMessage(error);
 
-        if (axios.isCancel(error)) {
-            params.dispatch && params.dispatch({
-                type: AUTHENTICATION_RESULT_STATUS.REQUEST_CANCELED,
-                error: 'Request canceled',
-            });
-            return { status: AUTHENTICATION_RESULT_STATUS.REQUEST_CANCELED };
-        }
-
         params.dispatch && params.dispatch({
             type: AUTHENTICATION_RESULT_STATUS.FAIL,
             error: errorMessage,
@@ -75,15 +60,6 @@ const refreshTokenLogin = async (cancelToken: CancelTokenSource) => {
         throw new Error('tokens not valid');
     }
 
-    // let tokens = { token: userData.token, refreshToken: userData.refreshToken };
-    let options = {
-        cancelToken: cancelToken.token,
-        headers: {
-            Accept: 'application/json',
-            'Content-type': 'application/json',
-        },
-    };
-
     return await axios.post<AuthResponseBody_API>('/auth/refresh-token', userData.token ?? {});
 };
 
@@ -102,13 +78,12 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
 
     } catch (err) {
         const errorMessage = getErrorMessage(err);
-
         return { status: AUTHENTICATION_RESULT_STATUS.FAIL, message: errorMessage };
     }
 };
 
 // Signup functions
-export const signup = async (params: SignupParams): Promise<SignupResponseType> => {
+export const signup = async (params: SignupParams): Promise<BaseResponseType> => {
     try {
         if (!params.username) throw Error('Username required');
         if (!params.email) throw Error('Email required');
@@ -123,17 +98,29 @@ export const signup = async (params: SignupParams): Promise<SignupResponseType> 
         return { status: BASE_RESULT_STATUS.FAIL, message: resp.data.errors.join(', ') };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
+        return { status: BASE_RESULT_STATUS.FAIL, message: errorMessage };
+    }
+}
+export const confirmEmail = async (userId: string, token: string): Promise<BaseResponseType> => {
+    try {
+        if (!userId) throw Error('User id required');
+        if (!token) throw Error('Token required');
 
-        if (axios.isCancel(error)) {
-            return { status: BASE_RESULT_STATUS.REQUEST_CANCELED };
+        const resp = await axios.post<BaseAuthResponse_API>('/auth/confirm-email', { userId, token });
+
+        if (resp.data?.success) {
+            return { status: BASE_RESULT_STATUS.SUCCESS };
         }
 
+        return { status: BASE_RESULT_STATUS.FAIL, message: resp.data.errors.join(', ') };
+    } catch (error) {
+        const errorMessage = getErrorMessage(error);
         return { status: BASE_RESULT_STATUS.FAIL, message: errorMessage };
     }
 }
 
 // Reset password functions
-export const sendLinkResetPassword = async (email: string): Promise<SendLinkResetPasswordResponseType> => {
+export const sendLinkResetPassword = async (email: string): Promise<BaseResponseType> => {
     try {
         if (!email) throw Error('Email required');
 
@@ -146,12 +133,25 @@ export const sendLinkResetPassword = async (email: string): Promise<SendLinkRese
         return { status: BASE_RESULT_STATUS.SUCCESS };
     } catch (error) {
         const errorMessage = getErrorMessage(error);
+        return { status: BASE_RESULT_STATUS.FAIL, message: errorMessage };
+    }
+}
+export const resetPassword = async (userId: string, password: string, token: string): Promise<BaseResponseType> => {
+    try {
+        if (!password) throw Error('Password required');
+        if (!token) throw Error('Token required');
 
-        if (axios.isCancel(error)) {
-            return { status: BASE_RESULT_STATUS.REQUEST_CANCELED };
+        const resp = await axios.post<SendLinkResetPasswordResponse_API>('/auth/reset-password', { userId, password, token });
+
+        if (!resp.data.success) {
+            return { status: BASE_RESULT_STATUS.FAIL, message: getErrorMessage(resp) };
         }
 
-        return { status: BASE_RESULT_STATUS.FAIL, message: errorMessage };
+        return { status: BASE_RESULT_STATUS.SUCCESS };
+    } catch (error) {
+        const err = getErrorMessage(error);
+
+        return { status: BASE_RESULT_STATUS.FAIL, message: err };
     }
 }
 

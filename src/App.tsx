@@ -4,9 +4,11 @@ import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
 import WithAxios from 'components/WithAxios';
 import AskResetPassword from 'pages/ask-reset-password/askResetPassword';
+import ConfirmEmail from 'pages/confirm-email/confirmEmail';
 import Index from 'pages/index';
 import Login from 'pages/login/login';
-import SignUp from 'pages/signUp/signUp';
+import ResetPassword from 'pages/reset-password/resetPassword';
+import Signup from 'pages/signup/signup';
 import Welcome from 'pages/welcome/welcome';
 import { useLayoutEffect, useReducer } from 'react';
 import { QueryClient, QueryClientProvider } from "react-query";
@@ -92,6 +94,7 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 const App = () => {
 	const [user, dispatch] = useReducer(userReducer, initUser);
 
+	// Handle user auth
 	useLayoutEffect(() => {
 		(async () => {
 			const localStorageData = LocalStorageService.getUserData();
@@ -128,15 +131,23 @@ const App = () => {
 							<Routes>
 								<Route index element={<Index />} />
 								<Route
-									path="/signup"
+									path="signup"
 									element={
 										<AnonymousRoute>
-											<SignUp />
+											<Signup />
 										</AnonymousRoute>
 									}
 								/>
 								<Route
-									path="/login"
+									path="confirm-email"
+									element={
+										<AnonymousRoute>
+											<ConfirmEmail />
+										</AnonymousRoute>
+									}
+								/>
+								<Route
+									path="login"
 									element={
 										<AnonymousRoute>
 											<Login />
@@ -152,7 +163,15 @@ const App = () => {
 									}
 								/>
 								<Route
-									path="/welcome"
+									path="reset-password"
+									element={
+										<AnonymousRoute>
+											<ResetPassword />
+										</AnonymousRoute>
+									}
+								/>
+								<Route
+									path="welcome"
 									element={
 										<PrivateRoute>
 											<Welcome />
