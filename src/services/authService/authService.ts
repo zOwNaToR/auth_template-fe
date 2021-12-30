@@ -60,7 +60,9 @@ const refreshTokenLogin = async (cancelToken: CancelTokenSource) => {
         throw new Error('tokens not valid');
     }
 
-    return await axios.post<AuthResponseBody_API>('/auth/refresh-token', userData.token ?? {});
+    const params = userData.token ? { token: userData.token } : {};
+
+    return await axios.post<AuthResponseBody_API>('/auth/refresh-token', params);
 };
 
 // Logout functions
