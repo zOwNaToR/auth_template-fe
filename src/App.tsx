@@ -3,13 +3,12 @@ import AnonymousRoute from 'components/AnonymousRoute';
 import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
 import WithAxios from 'components/WithAxios';
-import AskResetPassword from 'pages/ask-reset-password/askResetPassword';
-import ConfirmEmail from 'pages/confirm-email/confirmEmail';
+import AskResetPassword from 'pages/auth/ask-reset-password/askResetPassword';
+import ConfirmEmail from 'pages/auth/confirm-email/confirmEmail';
 import Index from 'pages/index';
-import Login from 'pages/login/login';
-import ResetPassword from 'pages/reset-password/resetPassword';
-import Signup from 'pages/signup/signup';
-import Welcome from 'pages/welcome/welcome';
+import Login from 'pages/auth/login/login';
+import ResetPassword from 'pages/auth/reset-password/resetPassword';
+import Signup from 'pages/auth/signup/signup';
 import { useLayoutEffect, useReducer } from 'react';
 import { QueryClient, QueryClientProvider } from "react-query";
 import { Route, Routes } from 'react-router-dom';
@@ -168,14 +167,6 @@ const App = () => {
 										<AnonymousRoute>
 											<ResetPassword />
 										</AnonymousRoute>
-									}
-								/>
-								<Route
-									path="welcome"
-									element={
-										<PrivateRoute>
-											<Welcome />
-										</PrivateRoute>
 									}
 								/>
 							</Routes>
