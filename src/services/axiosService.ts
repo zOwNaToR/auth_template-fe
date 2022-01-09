@@ -59,7 +59,6 @@ export const setupAxiosInterceptors = (dispatch: React.Dispatch<UserReducerActio
                 await login({
                     loginMode: LOGIN_MODE.SILENT,
                     dispatch: dispatch,
-                    cancelToken: axios.CancelToken.source(),
                 });
 
                 return await axios(originalRequest);

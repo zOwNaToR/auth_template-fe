@@ -1,47 +1,37 @@
-import axios from "axios";
-import Button from "components/basics/Button";
-import Input from "components/basics/Input";
+import Button from "components/atoms/Button";
+import InputWithValidation from "components/atoms/InputWithValidation";
+import SelectWithValidation from "components/atoms/SelectWithValidation";
 import { FullScreenForm } from "components/FullScreenForm";
 import PageHeader from "components/PageHeader";
-import Spinner from "components/Spinner";
+import Spinner from "components/spinner/Spinner";
 import { useState, VFC } from "react";
-import { Link } from "react-router-dom";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { signup } from "services/authService/authService";
 import { BASE_RESULT_STATUS } from "utils/constants";
 
+type FormData = {
+    // firstName: string,
+    // lastName: string,
+    username: string,
+    email: string,
+    // birthDate: Date,
+    // sex?: string,
+    password: string,
+    confirmPassword: string,
+}
+
 const Signup: VFC = () => {
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
     const [signupState, setSignupState] = useState<BASE_RESULT_STATUS | null>(null);
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
+        // const { firstName, lastName, email, birthDate, sex, password } = data;
+        const { username, email, password } = data;
 
-        if (!username) {
-            setError('Username required');
-            return;
-        }
-        if (!email) {
-            setError('Email required');
-            return;
-        }
-        if (!password) {
-            setError('Password required');
-            return;
-        }
-        if (!confirmPassword) {
-            setError('Confirm password required');
-            return;
-        }
-        if (password != confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
+        setError('');
         setSignupState(BASE_RESULT_STATUS.PENDING);
+
         const resp = await signup({ username, email, password });
         setSignupState(resp.status);
         setError(resp.message ?? '');
@@ -60,44 +50,90 @@ const Signup: VFC = () => {
                         </p>
                     </div>
                 ) : (
-                    <form className='flex flex-col items-start' onSubmit={handleSubmit}>
-                        <Input
-                            className='mb-4 block self-stretch'
-                            type="text"
-                            placeholder='Username'
-                            value={username}
-                            onChange={e => setUsername(e.currentTarget.value)}
-                        />
-                        <Input
-                            className='mb-4 block self-stretch'
-                            type="email"
-                            placeholder='Email'
-                            value={email}
-                            onChange={e => setEmail(e.currentTarget.value)}
-                        />
-                        <Input
-                            className='mb-4 block self-stretch'
-                            type="password"
-                            placeholder='Password'
-                            autoComplete='new-password'
-                            value={password}
-                            onChange={e => setPassword(e.currentTarget.value)}
-                        />
-                        <Input
-                            className='mb-4 block self-stretch'
-                            type="password"
-                            placeholder='Confirm password'
-                            autoComplete='new-password'
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.currentTarget.value)}
-                        />
-                        {error && <div className='mb-4 text-red-500'>{error}</div>}
+                    <form className='flex flex-col items-center' onSubmit={handleSubmit(onSubmit)}>
+                        <div className="grid gap-y-2 gap-x-4 grid-cols-1 md:grid-cols-2">
+                            {/* <InputWithValidation
+                                className='block self-stretch'
+                                type="text"
+                                label='First Name'
+                                required
+                                error={errors.firstName}
+                                {...register("firstName", { required: 'Campo obbligatorio' })}
+                            />
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="text"
+                                label='Last Name'
+                                required
+                                error={errors.lastName}
+                                {...register("lastName", { required: 'Campo obbligatorio' })}
+                            /> */}
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="text"
+                                label='Username'
+                                required
+                                error={errors.username}
+                                {...register("username", { required: 'Campo obbligatorio' })}
+                            />
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="email"
+                                label='Email'
+                                required
+                                error={errors.email}
+                                {...register("email", { required: 'Campo obbligatorio' })}
+                            />
+                            {/* <InputWithValidation
+                                className='block self-stretch'
+                                type="date"
+                                label='Birth Date'
+                                required
+                                error={errors.birthDate}
+                                {...register("birthDate", { required: 'Campo obbligatorio' })}
+                            /> */}
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="password"
+                                label='Password'
+                                autoComplete='new-password'
+                                required
+                                error={errors.password}
+                                {...register("password", { required: 'Campo obbligatorio' })}
+                            />
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="password"
+                                label='Confirm password'
+                                autoComplete='new-password'
+                                required
+                                error={errors.confirmPassword}
+                                {...register("confirmPassword", {
+                                    required: 'Campo obbligatorio',
+                                    validate: v => v === watch('password') || 'Le password non coincidono',
+                                })}
+                            />
+                            {/* <SelectWithValidation
+                                className='block self-stretch'
+                                label='Sex'
+                                error={errors.sex}
+                                {...register("sex")}
+                                options={[
+                                    { value: "", label: 'Non specificato' },
+                                    { value: 'M', label: 'Maschio' },
+                                    { value: 'F', label: 'Femmina' }
+                                ]}
+                            /> */}
+                        </div>
+                        {error && <div className='mt-2 text-red-500'>{error}</div>}
 
-                        {signupState === BASE_RESULT_STATUS.PENDING ? (
-                            <Spinner small fullWidth />
-                        ) : (
-                            <Button color="primary" type="submit" className='self-center'>Signup</Button>
-                        )}
+                        <div className="mt-2">
+                            {signupState === BASE_RESULT_STATUS.PENDING ? (
+                                <Spinner fullWidth />
+                            ) : (
+                                <Button color="primary" type="submit">Signup</Button>
+                            )}
+                        </div>
                     </form>
                 )}
             </FullScreenForm>

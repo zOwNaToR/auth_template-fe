@@ -1,4 +1,4 @@
-import Button from 'components/basics/Button';
+import Button from 'components/atoms/Button';
 import CenteredContainer from 'components/CenteredContainer';
 import PageHeader from 'components/PageHeader';
 import { useAuth } from 'hooks/useAuth';

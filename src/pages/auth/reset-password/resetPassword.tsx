@@ -1,34 +1,35 @@
-import Button from 'components/basics/Button';
-import Input from 'components/basics/Input';
+import Button from 'components/atoms/Button';
+import InputWithValidation from 'components/atoms/InputWithValidation';
 import { FullScreenForm } from 'components/FullScreenForm';
 import PageHeader from 'components/PageHeader';
-import Spinner from 'components/Spinner';
-import useSameValueStates from 'hooks/useSameValueStates';
+import Spinner from 'components/spinner/Spinner';
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { Link, useSearchParams } from 'react-router-dom';
 import { resetPassword } from 'services/authService/authService';
-import { BASE_RESULT_STATUS } from 'utils/constants';
+import { BASE_RESULT_STATUS, ROUTES } from 'utils/constants';
 
-const ResetPassword = () => {
-    const [error, setError] = useState('');
-    const [[password, setPassword], [confirmPassword, setConfirmPassword], checkPasswords] = useSameValueStates<string>('', '');
+type FormData = {
+    password: string,
+    confirmPassword: string,
+}
+
+const ResetPassword: React.VFC = () => {
+    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>();
     const [resetPasswordState, setResetPasswordState] = useState<BASE_RESULT_STATUS | null>(null);
+    const [error, setError] = useState('');
+    const [searchParams] = useSearchParams();
 
-    const navigate = useNavigate();
-    const [searchParams, _] = useSearchParams();
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
+        const { password } = data;
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+        setError('');
 
         setResetPasswordState(BASE_RESULT_STATUS.PENDING);
         const resp = await resetPassword(searchParams.get('userId') ?? '', password, searchParams.get('token') ?? '');
         setResetPasswordState(resp.status);
 
-        if (resp.status === BASE_RESULT_STATUS.FAIL) {
-            setError(resp.message ?? '');
-        } else {
-            setError('');
-        }
+        setError(resp.message ?? '');
     }
 
     return (
@@ -43,37 +44,46 @@ const ResetPassword = () => {
                             Password resetted successfully!
                         </p>
                         <div className='line-break' />
-                        <Link to="/login" className='self-center'>
+                        <Link to={ROUTES.LOGIN.path} className='self-center'>
                             <Button color="success" type="button">
                                 Go to login
                             </Button>
                         </Link>
                     </div>
                 ) : (
-                    <form className='flex flex-col items-start' onSubmit={handleSubmit}>
-                        <Input
-                            className='mb-4 block self-stretch'
-                            type="password"
-                            placeholder='Password'
-                            autoComplete='new-password'
-                            value={password}
-                            onChange={e => setPassword(e.currentTarget.value)}
-                        />
-                        <Input
-                            className='mb-4 block self-stretch'
-                            type="password"
-                            placeholder='Confirm password'
-                            autoComplete='new-password'
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.currentTarget.value)}
-                        />
-                        {error && <div className='mb-4 text-red-500'>{error}</div>}
+                    <form className='flex flex-col items-center' onSubmit={handleSubmit(onSubmit)}>
+                        <div className="grid gap-y-2 gap-x-4 grid-cols-1">
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="password"
+                                label='Password'
+                                autoComplete='new-password'
+                                required
+                                error={errors.password}
+                                {...register("password", { required: 'Campo obbligatorio' })}
+                            />
+                            <InputWithValidation
+                                className='block self-stretch'
+                                type="password"
+                                label='Confirm password'
+                                autoComplete='new-password'
+                                required
+                                error={errors.confirmPassword}
+                                {...register("confirmPassword", {
+                                    required: 'Campo obbligatorio',
+                                    validate: v => v === watch('password') || 'Le password non coincidono',
+                                })}
+                            />
+                        </div>
+                        {error && <div className='mt-2 text-red-500'>{error}</div>}
 
-                        {resetPasswordState === BASE_RESULT_STATUS.PENDING ? (
-                            <Spinner small fullWidth />
-                        ) : (
-                            <Button color="primary" type="submit" className='self-center'>Reset</Button>
-                        )}
+                        <div className="mt-2">
+                            {resetPasswordState === BASE_RESULT_STATUS.PENDING ? (
+                                <Spinner fullWidth />
+                            ) : (
+                                <Button color="primary" type="submit" className='self-center'>Reset</Button>
+                            )}
+                        </div>
                     </form>
                 )}
             </FullScreenForm>

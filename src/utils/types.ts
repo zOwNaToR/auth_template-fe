@@ -1,10 +1,18 @@
+import { BASE_RESULT_STATUS } from "./constants"
+
 type BaseAuthInfo = {
     token?: string;
     expireDate?: Date;
     refreshTokenHidden: boolean;
 }
 
-// Auth
+// Internal Responses
+export type BaseResponseType = {
+    status: BASE_RESULT_STATUS,
+    message?: string,
+}
+
+// API Reponses
 export type BaseAuthResponse_API = {
     success: boolean,
     errors: string[];
@@ -39,4 +47,22 @@ export type UserData = BaseAuthInfo & {
 // Props
 export type WithClassName = {
     className?: string;
+}
+
+// Routes
+export type Routes = {
+    // Index and Auth
+    INDEX: RouteType,
+    SIGNUP: RouteType,
+    LOGIN: RouteType,
+    CONFIRM_EMAIL: RouteType,
+    FORGOT_PASSWORD: RouteType,
+    RESET_PASSWORD: RouteType,
+}
+export type RouteType = {
+    component: React.VFC<{}>,
+    path: string,
+    isIndex: boolean,
+    isAnonymous: boolean,
+    isPrivate: boolean,
 }

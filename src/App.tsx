@@ -3,18 +3,18 @@ import AnonymousRoute from 'components/AnonymousRoute';
 import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
 import WithAxios from 'components/WithAxios';
-import AskResetPassword from 'pages/auth/ask-reset-password/askResetPassword';
+import ForgotPassword from 'pages/auth/forgot-password/forgotPassword';
 import ConfirmEmail from 'pages/auth/confirm-email/confirmEmail';
 import Index from 'pages/index';
 import Login from 'pages/auth/login/login';
 import ResetPassword from 'pages/auth/reset-password/resetPassword';
 import Signup from 'pages/auth/signup/signup';
-import { useLayoutEffect, useReducer } from 'react';
+import { useLayoutEffect, useMemo, useReducer } from 'react';
 import { QueryClient, QueryClientProvider } from "react-query";
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { canRefreshToken, login, userIsLoggedIn } from 'services/authService/authService';
 import LocalStorageService from 'services/localStorageService';
-import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
+import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, ROUTES } from 'utils/constants';
 import { AuthContext } from 'utils/contexts';
 import { User } from 'utils/types';
 
@@ -92,31 +92,63 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 
 const App = () => {
 	const [user, dispatch] = useReducer(userReducer, initUser);
+	const { pathname } = useLocation();
+
+	const loginUserIfNotlogger = async () => {
+		// If the user is not logged 
+		if (!userIsLoggedIn(user)) {
+			const localStorageData = LocalStorageService.getUserData();
+
+			// But in the localstorage he has a valid token, use that 
+			if (userIsLoggedIn(localStorageData)) {
+				dispatch({
+					type: AUTHENTICATION_RESULT_STATUS.LOGGED,
+					payload: { ...localStorageData, isLoading: false } as User,
+				});
+			}
+			// Otherwise, if the token is expired and refreshToken is present, use it
+			else if (canRefreshToken(localStorageData)) {
+				await login({
+					loginMode: LOGIN_MODE.SILENT,
+					dispatch,
+				});
+			}
+		}
+	}
 
 	// Handle user auth
 	useLayoutEffect(() => {
-		(async () => {
-			const localStorageData = LocalStorageService.getUserData();
+		loginUserIfNotlogger();
+	}, [pathname]);
 
-			// If the user is not logged 
-			if (!userIsLoggedIn(user)) {
-				// But in the localstorage he has a valid token, use that 
-				if (userIsLoggedIn(localStorageData)) {
-					dispatch({
-						type: AUTHENTICATION_RESULT_STATUS.LOGGED,
-						payload: { ...localStorageData, isLoading: false } as User,
-					});
-				}
-				// Otherwise, if the token is expired and refreshToken is present, use it
-				else if (canRefreshToken(localStorageData)) {
-					await login({
-						loginMode: LOGIN_MODE.SILENT,
-						dispatch,
-						cancelToken: axios.CancelToken.source(),
-					});
-				}
+	const routes = useMemo(() => {
+		var routeEntries = Object.entries(ROUTES);
+		const tempRoutes = routeEntries.map(x => {
+			const element = x[1];
+
+			let props: any = {
+				element: <element.component />
 			}
-		})();
+
+			if (element.path) props.path = element.path;
+			if (element.isIndex) props.index = true;
+			if (element.isAnonymous) {
+				props.element = <AnonymousRoute>
+					{props.element}
+				</AnonymousRoute>;
+			}
+			else if (element.isPrivate) {
+				props.element = <PrivateRoute>
+					{props.element}
+				</PrivateRoute>;
+			}
+
+			return <Route
+				key={element.path}
+				{...props}
+			/>
+		})
+		return tempRoutes;
 	}, []);
 
 	return (
@@ -128,47 +160,7 @@ const App = () => {
 					<div className="Content mx-5 mt-5">
 						<QueryClientProvider client={queryClient}>
 							<Routes>
-								<Route index element={<Index />} />
-								<Route
-									path="signup"
-									element={
-										<AnonymousRoute>
-											<Signup />
-										</AnonymousRoute>
-									}
-								/>
-								<Route
-									path="confirm-email"
-									element={
-										<AnonymousRoute>
-											<ConfirmEmail />
-										</AnonymousRoute>
-									}
-								/>
-								<Route
-									path="login"
-									element={
-										<AnonymousRoute>
-											<Login />
-										</AnonymousRoute>
-									}
-								/>
-								<Route
-									path="ask-reset-password"
-									element={
-										<AnonymousRoute>
-											<AskResetPassword />
-										</AnonymousRoute>
-									}
-								/>
-								<Route
-									path="reset-password"
-									element={
-										<AnonymousRoute>
-											<ResetPassword />
-										</AnonymousRoute>
-									}
-								/>
+								{routes}
 							</Routes>
 						</QueryClientProvider>
 					</div>

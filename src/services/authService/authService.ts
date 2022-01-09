@@ -1,10 +1,10 @@
 import { UserReducerActionType } from 'App';
-import axios, { AxiosResponse, CancelTokenSource } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { AUTHENTICATION_RESULT_STATUS, BASE_RESULT_STATUS, LOGIN_MODE } from 'utils/constants';
 import { getErrorMessage } from 'utils/errors';
-import { AuthResponseBody_API, BaseAuthResponse_API, SendLinkResetPasswordResponse_API, User } from 'utils/types';
+import { AuthResponseBody_API, BaseAuthResponse_API, BaseResponseType, SendLinkResetPasswordResponse_API, User } from 'utils/types';
 import LocalStorageService from '../localStorageService';
-import { LoginParams, LoginResponseType, LogoutResponseType, BaseResponseType, SignupParams } from './types';
+import { LoginParams, LoginResponseType, LogoutResponseType, SignupParams } from './types';
 
 // Login functions
 export const login = async (params: LoginParams): Promise<LoginResponseType> => {
@@ -15,10 +15,10 @@ export const login = async (params: LoginParams): Promise<LoginResponseType> => 
     try {
         switch (params.loginMode) {
             case LOGIN_MODE.CREDENTIALS:
-                loginResp = await credentialsLogin(params.email, params.password, params.cancelToken);
+                loginResp = await credentialsLogin(params.email, params.password);
                 break;
             case LOGIN_MODE.SILENT:
-                loginResp = await refreshTokenLogin(params.cancelToken);
+                loginResp = await refreshTokenLogin();
                 break;
             default:
                 throw new Error('Invalid login mode');
@@ -48,13 +48,13 @@ export const login = async (params: LoginParams): Promise<LoginResponseType> => 
         return { status: AUTHENTICATION_RESULT_STATUS.FAIL, message: errorMessage };
     }
 }
-const credentialsLogin = async (email: string, password: string, cancelToken: CancelTokenSource) => {
+const credentialsLogin = async (email: string, password: string) => {
     if (!email || !password) throw new Error('Email and password are required');
 
     const loginData = { email, password };
     return await axios.post<AuthResponseBody_API>('/auth/login', loginData);
 };
-const refreshTokenLogin = async (cancelToken: CancelTokenSource) => {
+const refreshTokenLogin = async () => {
     const userData = LocalStorageService.getUserData();
     if (!userData || !userData.refreshTokenHidden) {
         throw new Error('tokens not valid');
@@ -73,7 +73,7 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
             throw new Error('userData not valid');
         }
 
-        const response = await axios.post('/auth/revoke-token', {});
+        await axios.post('/auth/revoke-token', {});
 
         dispatch({ type: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT });
         return { status: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT };

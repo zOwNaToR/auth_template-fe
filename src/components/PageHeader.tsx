@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import CenteredContainer from './CenteredContainer';
 
-const PageTitle: FC = ({ children }) => {
+export const PageTitle: FC = ({ children }) => {
     return (
         <h1 className='font-bold text-2xl'>
             {children}
