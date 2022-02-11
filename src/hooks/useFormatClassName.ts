@@ -8,10 +8,11 @@ export const useFormatClassName = <Type extends WithClassName>(
     deps: React.DependencyList | undefined
 ) => {
     const { className, ...otherProps } = props;
+    const depArray = !!deps ? [...deps] : [];
 
     let newClassName = useMemo(
         () => removeUnecessarySpaces(`${className ?? ''} ${unformattedClassNames}`),
-        deps?.concat(className)
+        [className, unformattedClassNames, ...depArray] // deps?.concat(className)
     );
 
     return [newClassName, otherProps] as [string, Omit<Type, "className">];
