@@ -11,12 +11,12 @@ type InputWithValidationProps = InputProps & {
 
 const InputWithValidation = React.forwardRef<HTMLInputElement, InputWithValidationProps>((props, ref) => {
     let [classNameWrapper, { error, required, ...otherProps }] = useFormatClassName(props, `
-        ${props.fullWidth ? 'w-full' : 'w-56'} 
+        ${props.fullWidth ? 'w-full' : 'w-60'} 
     `, [props.fullWidth]);
 
 
-    if (required) otherProps.label += "*";
-
+    if (required) otherProps.label += "*"; 
+    
     return (
         <div className={classNameWrapper}>
             <Input {...otherProps} ref={ref} fullWidth />

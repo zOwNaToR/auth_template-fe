@@ -12,7 +12,10 @@ export type LoginParams = (
     | { loginMode: LOGIN_MODE.SILENT, dispatch: React.Dispatch<UserReducerActionType> | null });
 
 export type SignupParams = {
-    username: string,
+    firstName: string,
+    lastName: string,
     email: string,
+    birthDate: Date,
+    sex?: string,
     password: string,
 };

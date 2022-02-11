@@ -1,14 +1,7 @@
-import axios from 'axios';
 import AnonymousRoute from 'components/AnonymousRoute';
 import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
 import WithAxios from 'components/WithAxios';
-import ForgotPassword from 'pages/auth/forgot-password/forgotPassword';
-import ConfirmEmail from 'pages/auth/confirm-email/confirmEmail';
-import Index from 'pages/index';
-import Login from 'pages/auth/login/login';
-import ResetPassword from 'pages/auth/reset-password/resetPassword';
-import Signup from 'pages/auth/signup/signup';
 import { useLayoutEffect, useMemo, useReducer } from 'react';
 import { QueryClient, QueryClientProvider } from "react-query";
 import { Route, Routes, useLocation } from 'react-router-dom';
@@ -137,7 +130,7 @@ const App = () => {
 					{props.element}
 				</AnonymousRoute>;
 			}
-			else if (element.isPrivate) {
+			else {
 				props.element = <PrivateRoute>
 					{props.element}
 				</PrivateRoute>;
@@ -148,11 +141,12 @@ const App = () => {
 				{...props}
 			/>
 		})
+
 		return tempRoutes;
 	}, []);
 
 	return (
-		<div className="App">
+		<div className="App text-primary">
 			<AuthContext.Provider value={{ user, dispatch }}>
 				<WithAxios>
 					<Navbar />

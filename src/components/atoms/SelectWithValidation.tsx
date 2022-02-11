@@ -10,7 +10,7 @@ type SelectWithValidationProps = SelectProps & {
 
 const SelectWithValidation = React.forwardRef<HTMLSelectElement, SelectWithValidationProps>((props, ref) => {
     let [classNameWrapper, { error, ...otherProps }] = useFormatClassName(props, `
-        ${props.fullWidth ? 'w-full' : 'w-56'} 
+        ${props.fullWidth ? 'w-full' : 'w-60'} 
     `, [props.fullWidth]);
 
     return (

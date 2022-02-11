@@ -1,3 +1,4 @@
+import RouteClass from "classes/RouteClass"
 import { BASE_RESULT_STATUS } from "./constants"
 
 type BaseAuthInfo = {
@@ -52,17 +53,74 @@ export type WithClassName = {
 // Routes
 export type Routes = {
     // Index and Auth
-    INDEX: RouteType,
-    SIGNUP: RouteType,
-    LOGIN: RouteType,
-    CONFIRM_EMAIL: RouteType,
-    FORGOT_PASSWORD: RouteType,
-    RESET_PASSWORD: RouteType,
+    INDEX: RouteClass,
+    SIGNUP: RouteClass,
+    LOGIN: RouteClass,
+    CONFIRM_EMAIL: RouteClass,
+    FORGOT_PASSWORD: RouteClass,
+    RESET_PASSWORD: RouteClass,
 }
 export type RouteType = {
     component: React.VFC<{}>,
     path: string,
     isIndex: boolean,
     isAnonymous: boolean,
-    isPrivate: boolean,
+    routeParamNames?: string[],
+}
+
+// Entities
+export type Patient = {
+    id: string,
+    name: string,
+    sex: string,
+    weight: number,
+    height: number,
+    laf: number,
+    userId: string,
+}
+export type SmallPatient = Omit<Patient, 'sex' | 'weight' | 'height' | 'laf'>;
+
+export type Diet = {
+    id: string,
+    name: string;
+    creationDate: Date,
+    sex: string,
+    weight: number,
+    height: number,
+    laf: number,
+    patientId: string;
+}
+export type DietFull = Diet & {
+    patientName: string,
+    nutrients: Nutrient[],
+    dietFoods: DietFood[],
+}
+
+export type DietFood = {
+    grams: number,
+    order: number,
+    dietId: string,
+    foodId: string,
+    dietFoodNutrients: DietFoodNutrient[],
+}
+export type DietFoodFull = DietFood & {
+    foodName?: string,
+    foodCategoryName?: string,
+    foodCategoryId?: string,
+}
+
+export type DietFoodNutrient = {
+    id: string,
+    valuePerGrams: number,
+    grams: number,
+    nutrientId: string,
+    foodId?: string,
+    dietId?: string,
+}
+
+export type Nutrient = {
+    id: string,
+    name: string;
+    label: string;
+    order: number;
 }

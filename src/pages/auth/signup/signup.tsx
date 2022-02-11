@@ -10,12 +10,11 @@ import { signup } from "services/authService/authService";
 import { BASE_RESULT_STATUS } from "utils/constants";
 
 type FormData = {
-    // firstName: string,
-    // lastName: string,
-    username: string,
+    firstName: string,
+    lastName: string,
     email: string,
-    // birthDate: Date,
-    // sex?: string,
+    birthDate: Date,
+    sex?: string,
     password: string,
     confirmPassword: string,
 }
@@ -26,13 +25,12 @@ const Signup: VFC = () => {
     const [error, setError] = useState('');
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
-        // const { firstName, lastName, email, birthDate, sex, password } = data;
-        const { username, email, password } = data;
+        const { firstName, lastName, email, birthDate, sex, password } = data;
 
         setError('');
         setSignupState(BASE_RESULT_STATUS.PENDING);
 
-        const resp = await signup({ username, email, password });
+        const resp = await signup({ firstName, lastName, email, birthDate, sex, password });
         setSignupState(resp.status);
         setError(resp.message ?? '');
     }
@@ -52,8 +50,7 @@ const Signup: VFC = () => {
                 ) : (
                     <form className='flex flex-col items-center' onSubmit={handleSubmit(onSubmit)}>
                         <div className="grid gap-y-2 gap-x-4 grid-cols-1 md:grid-cols-2">
-                            {/* <InputWithValidation
-                                className='block self-stretch'
+                            <InputWithValidation
                                 type="text"
                                 label='First Name'
                                 required
@@ -61,39 +58,27 @@ const Signup: VFC = () => {
                                 {...register("firstName", { required: 'Campo obbligatorio' })}
                             />
                             <InputWithValidation
-                                className='block self-stretch'
                                 type="text"
                                 label='Last Name'
                                 required
                                 error={errors.lastName}
                                 {...register("lastName", { required: 'Campo obbligatorio' })}
-                            /> */}
-                            <InputWithValidation
-                                className='block self-stretch'
-                                type="text"
-                                label='Username'
-                                required
-                                error={errors.username}
-                                {...register("username", { required: 'Campo obbligatorio' })}
                             />
                             <InputWithValidation
-                                className='block self-stretch'
                                 type="email"
                                 label='Email'
                                 required
                                 error={errors.email}
                                 {...register("email", { required: 'Campo obbligatorio' })}
                             />
-                            {/* <InputWithValidation
-                                className='block self-stretch'
+                            <InputWithValidation
                                 type="date"
                                 label='Birth Date'
                                 required
                                 error={errors.birthDate}
                                 {...register("birthDate", { required: 'Campo obbligatorio' })}
-                            /> */}
+                            />
                             <InputWithValidation
-                                className='block self-stretch'
                                 type="password"
                                 label='Password'
                                 autoComplete='new-password'
@@ -102,7 +87,6 @@ const Signup: VFC = () => {
                                 {...register("password", { required: 'Campo obbligatorio' })}
                             />
                             <InputWithValidation
-                                className='block self-stretch'
                                 type="password"
                                 label='Confirm password'
                                 autoComplete='new-password'
@@ -113,8 +97,7 @@ const Signup: VFC = () => {
                                     validate: v => v === watch('password') || 'Le password non coincidono',
                                 })}
                             />
-                            {/* <SelectWithValidation
-                                className='block self-stretch'
+                            <SelectWithValidation
                                 label='Sex'
                                 error={errors.sex}
                                 {...register("sex")}
@@ -123,15 +106,15 @@ const Signup: VFC = () => {
                                     { value: 'M', label: 'Maschio' },
                                     { value: 'F', label: 'Femmina' }
                                 ]}
-                            /> */}
+                            />
                         </div>
                         {error && <div className='mt-2 text-red-500'>{error}</div>}
 
-                        <div className="mt-2">
+                        <div className="mt-4">
                             {signupState === BASE_RESULT_STATUS.PENDING ? (
                                 <Spinner fullWidth />
                             ) : (
-                                <Button color="primary" type="submit">Signup</Button>
+                                <Button type="submit">Signup</Button>
                             )}
                         </div>
                     </form>

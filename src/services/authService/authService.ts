@@ -87,8 +87,10 @@ export const logout = async (dispatch: React.Dispatch<UserReducerActionType>): P
 // Signup functions
 export const signup = async (params: SignupParams): Promise<BaseResponseType> => {
     try {
-        if (!params.username) throw Error('Username required');
+        if (!params.firstName) throw Error('First name required');
+        if (!params.lastName) throw Error('Last name required');
         if (!params.email) throw Error('Email required');
+        if (!params.birthDate) throw Error('Birth date required');
         if (!params.password) throw Error('Password required');
 
         const resp = await axios.post<BaseAuthResponse_API>('/auth/signup', params);
