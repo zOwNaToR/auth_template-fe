@@ -35,14 +35,13 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 	switch (action.type) {
 		case AUTHENTICATION_RESULT_STATUS.PENDING:
 			newUser = {
-				...state,
+				...initUser,
 				isLoading: true,
 				errorMessage: undefined,
 			};
 			break;
 		case AUTHENTICATION_RESULT_STATUS.LOGGED:
 			newUser = {
-				...state,
 				isLoading: false,
 				expireDate: action.payload.expireDate ? new Date(action.payload.expireDate) : undefined,
 				token: action.payload.token,
@@ -55,26 +54,13 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 		case AUTHENTICATION_RESULT_STATUS.REQUEST_CANCELED:
 		case AUTHENTICATION_RESULT_STATUS.FAIL:
 			newUser = {
-				...state,
-				isLoading: false,
-				expireDate: undefined,
-				token: undefined,
-				refreshTokenHidden: false,
-				userName: undefined,
+				...initUser,
 				errorMessage: action.error
 			};
 			break;
 		// Only LOGGED_OUT will directly exit the function
 		case AUTHENTICATION_RESULT_STATUS.LOGGED_OUT:
-			newUser = {
-				...state,
-				isLoading: false,
-				expireDate: undefined,
-				token: undefined,
-				refreshTokenHidden: false,
-				userName: undefined,
-				errorMessage: undefined
-			};
+			newUser = { ...initUser };
 
 			LocalStorageService.clearUserData();
 			break;
@@ -87,7 +73,7 @@ const App = () => {
 	const [user, dispatch] = useReducer(userReducer, initUser);
 	const { pathname } = useLocation();
 
-	const loginUserIfNotlogger = async () => {
+	const loginUserIfNotLogged = async () => {
 		// If the user is not logged 
 		if (!userIsLoggedIn(user)) {
 			const localStorageData = LocalStorageService.getUserData();
@@ -111,16 +97,16 @@ const App = () => {
 
 	// Handle user auth
 	useLayoutEffect(() => {
-		loginUserIfNotlogger();
+		loginUserIfNotLogged();
 	}, [pathname]);
 
 	const routes = useMemo(() => {
-		var routeEntries = Object.entries(ROUTES);
-		const tempRoutes = routeEntries.map(x => {
+		const routeEntries = Object.entries(ROUTES);
+		return routeEntries.map(x => {
 			const element = x[1];
 
 			let props: any = {
-				element: <element.component />
+				element: <element.component/>
 			}
 
 			if (element.path) props.path = element.path;
@@ -129,8 +115,7 @@ const App = () => {
 				props.element = <AnonymousRoute>
 					{props.element}
 				</AnonymousRoute>;
-			}
-			else {
+			} else {
 				props.element = <PrivateRoute>
 					{props.element}
 				</PrivateRoute>;
@@ -140,9 +125,7 @@ const App = () => {
 				key={element.path}
 				{...props}
 			/>
-		})
-
-		return tempRoutes;
+		});
 	}, []);
 
 	return (
