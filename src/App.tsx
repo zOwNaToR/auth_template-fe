@@ -3,11 +3,19 @@ import Navbar from 'components/Navbar';
 import PrivateRoute from 'components/PrivateRoute';
 import WithAxios from 'components/WithAxios';
 import { useLayoutEffect, useMemo, useReducer } from 'react';
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { canRefreshToken, login, userIsLoggedIn } from 'services/authService/authService';
+import {
+	canRefreshToken,
+	login,
+	userIsLoggedIn,
+} from 'services/authService/authService';
 import LocalStorageService from 'services/localStorageService';
-import { AUTHENTICATION_RESULT_STATUS, LOGIN_MODE, ROUTES } from 'utils/constants';
+import {
+	AUTHENTICATION_RESULT_STATUS,
+	LOGIN_MODE,
+	ROUTES,
+} from 'utils/constants';
 import { AuthContext } from 'utils/contexts';
 import { User } from 'utils/types';
 
@@ -24,10 +32,10 @@ const initUser: User = {
 
 export type UserReducerActionType =
 	| { type: AUTHENTICATION_RESULT_STATUS.PENDING }
-	| { type: AUTHENTICATION_RESULT_STATUS.LOGGED, payload: User }
+	| { type: AUTHENTICATION_RESULT_STATUS.LOGGED; payload: User }
 	| { type: AUTHENTICATION_RESULT_STATUS.LOGGED_OUT }
-	| { type: AUTHENTICATION_RESULT_STATUS.REQUEST_CANCELED, error: string }
-	| { type: AUTHENTICATION_RESULT_STATUS.FAIL, error: string };
+	| { type: AUTHENTICATION_RESULT_STATUS.REQUEST_CANCELED; error: string }
+	| { type: AUTHENTICATION_RESULT_STATUS.FAIL; error: string };
 
 const userReducer = (state: User, action: UserReducerActionType): User => {
 	let newUser = {} as User;
@@ -43,7 +51,9 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 		case AUTHENTICATION_RESULT_STATUS.LOGGED:
 			newUser = {
 				isLoading: false,
-				expireDate: action.payload.expireDate ? new Date(action.payload.expireDate) : undefined,
+				expireDate: action.payload.expireDate
+					? new Date(action.payload.expireDate)
+					: undefined,
 				token: action.payload.token,
 				refreshTokenHidden: action.payload.refreshTokenHidden,
 				userName: action.payload.userName,
@@ -55,7 +65,7 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 		case AUTHENTICATION_RESULT_STATUS.FAIL:
 			newUser = {
 				...initUser,
-				errorMessage: action.error
+				errorMessage: action.error,
 			};
 			break;
 		// Only LOGGED_OUT will directly exit the function
@@ -67,18 +77,18 @@ const userReducer = (state: User, action: UserReducerActionType): User => {
 	}
 
 	return newUser;
-}
+};
 
 const App = () => {
 	const [user, dispatch] = useReducer(userReducer, initUser);
 	const { pathname } = useLocation();
 
 	const loginUserIfNotLogged = async () => {
-		// If the user is not logged 
+		// If the user is not logged
 		if (!userIsLoggedIn(user)) {
 			const localStorageData = LocalStorageService.getUserData();
 
-			// But in the localstorage he has a valid token, use that 
+			// But in the localstorage he has a valid token, use that
 			if (userIsLoggedIn(localStorageData)) {
 				dispatch({
 					type: AUTHENTICATION_RESULT_STATUS.LOGGED,
@@ -93,7 +103,7 @@ const App = () => {
 				});
 			}
 		}
-	}
+	};
 
 	// Handle user auth
 	useLayoutEffect(() => {
@@ -102,29 +112,24 @@ const App = () => {
 
 	const routes = useMemo(() => {
 		const routeEntries = Object.entries(ROUTES);
-		return routeEntries.map(x => {
+		return routeEntries.map((x) => {
 			const element = x[1];
 
 			let props: any = {
-				element: <element.component/>
-			}
+				element: <element.component />,
+			};
 
 			if (element.path) props.path = element.path;
 			if (element.isIndex) props.index = true;
 			if (element.isAnonymous) {
-				props.element = <AnonymousRoute>
-					{props.element}
-				</AnonymousRoute>;
+				props.element = (
+					<AnonymousRoute>{props.element}</AnonymousRoute>
+				);
 			} else {
-				props.element = <PrivateRoute>
-					{props.element}
-				</PrivateRoute>;
+				props.element = <PrivateRoute>{props.element}</PrivateRoute>;
 			}
 
-			return <Route
-				key={element.path}
-				{...props}
-			/>
+			return <Route key={element.path} {...props} />;
 		});
 	}, []);
 
@@ -136,15 +141,13 @@ const App = () => {
 
 					<div className="Content mx-5 mt-5">
 						<QueryClientProvider client={queryClient}>
-							<Routes>
-								{routes}
-							</Routes>
+							<Routes>{routes}</Routes>
 						</QueryClientProvider>
 					</div>
 				</WithAxios>
 			</AuthContext.Provider>
 		</div>
 	);
-}
+};
 
 export default App;
