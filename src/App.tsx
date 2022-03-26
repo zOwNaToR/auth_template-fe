@@ -8,9 +8,9 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import {
 	canRefreshToken,
 	login,
-	userIsLoggedIn,
+	hasValidToken,
 } from 'services/authService/authService';
-import LocalStorageService from 'services/localStorageService';
+import LocalStorageService from 'services/localStorageService/localStorageService';
 import {
 	AUTHENTICATION_RESULT_STATUS,
 	LOGIN_MODE,
@@ -84,24 +84,24 @@ const App = () => {
 	const { pathname } = useLocation();
 
 	const loginUserIfNotLogged = async () => {
-		// If the user is not logged
-		if (!userIsLoggedIn(user)) {
-			const localStorageData = LocalStorageService.getUserData();
+		if (hasValidToken(user)) return;
 
-			// But in the localstorage he has a valid token, use that
-			if (userIsLoggedIn(localStorageData)) {
-				dispatch({
-					type: AUTHENTICATION_RESULT_STATUS.LOGGED,
-					payload: { ...localStorageData, isLoading: false } as User,
-				});
-			}
-			// Otherwise, if the token is expired and refreshToken is present, use it
-			else if (canRefreshToken(localStorageData)) {
-				await login({
-					loginMode: LOGIN_MODE.SILENT,
-					dispatch,
-				});
-			}
+		// If in the localstorage he has a valid token, use that
+		const localStorageData = LocalStorageService.getUserData();
+		if (hasValidToken(localStorageData)) {
+			dispatch({
+				type: AUTHENTICATION_RESULT_STATUS.LOGGED,
+				payload: { ...localStorageData, isLoading: false } as User,
+			});
+			return;
+		}
+
+		// Otherwise, check if he has a valid refresh token
+		if (canRefreshToken(localStorageData)) {
+			await login({
+				loginMode: LOGIN_MODE.SILENT,
+				dispatch,
+			});
 		}
 	};
 
@@ -122,9 +122,7 @@ const App = () => {
 			if (element.path) props.path = element.path;
 			if (element.isIndex) props.index = true;
 			if (element.isAnonymous) {
-				props.element = (
-					<AnonymousRoute>{props.element}</AnonymousRoute>
-				);
+				props.element = <AnonymousRoute>{props.element}</AnonymousRoute>;
 			} else {
 				props.element = <PrivateRoute>{props.element}</PrivateRoute>;
 			}

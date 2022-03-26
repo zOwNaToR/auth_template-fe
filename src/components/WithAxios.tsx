@@ -1,15 +1,15 @@
-import { FC, useMemo } from 'react'
+import { FC, useMemo } from 'react';
 import { useAuth } from 'hooks/useAuth';
-import { setupAxiosInterceptors } from 'services/axiosService';
+import { setupAxiosInterceptors } from 'services/axiosService/axiosService';
 
 const WithAxios: FC = ({ children }) => {
-    const { dispatch } = useAuth();
+	const { dispatch } = useAuth();
 
-    useMemo(() => {
-        setupAxiosInterceptors(dispatch);
-    }, [dispatch])
+	useMemo(() => {
+		setupAxiosInterceptors(dispatch);
+	}, [dispatch]);
 
-    return <>{children}</>;
-}
+	return <>{children}</>;
+};
 
-export default WithAxios
+export default WithAxios;
